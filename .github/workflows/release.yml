@@ -1,0 +1,65 @@
+name: Release APK
+
+# Fires on version tags like v0.1.0, v1.2.3. Also runnable manually for
+# testing without cutting a real tag.
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install required SDK platform
+        run: sdkmanager "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest --no-daemon
+
+      - name: Rename APK with version
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          cp app/build/outputs/apk/debug/app-debug.apk "inkuiro-${version}-debug.apk"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          notes_file="$(mktemp)"
+          {
+            echo "**Note:** this is a debug-signed APK (no release keystore configured)."
+            echo ""
+            echo '```'
+            echo "adb install -r inkuiro-${version}-debug.apk"
+            echo '```'
+          } > "$notes_file"
+
+          gh release create "$GITHUB_REF_NAME" \
+            "inkuiro-${version}-debug.apk" \
+            --title "Inkuiro $GITHUB_REF_NAME" \
+            --notes-file "$notes_file" \
+            --generate-notes
