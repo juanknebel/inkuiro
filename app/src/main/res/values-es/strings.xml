@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="new_conversation">Nueva conversación</string>
+    <string name="settings">Ajustes</string>
+    <string name="about">Acerca de</string>
+    <string name="about_title">Acerca de</string>
+    <string name="about_version">Versión %1$s</string>
+    <string name="about_tagline">Cliente de chat con IA para tinta electrónica, hecho para el BOOX Palma.</string>
+    <string name="about_author_label">Autor</string>
+    <string name="about_repo_label">Repositorio</string>
+    <string name="about_license_label">Licencia</string>
+    <string name="empty_conversations">Sin conversaciones.\nTocá ＋ para empezar.</string>
+    <string name="send">Enviar</string>
+    <string name="stop">Detener</string>
+    <string name="generating">Generando…</string>
+    <string name="retry">Reintentar</string>
+    <string name="message_hint">Mensaje</string>
+
+    <string name="provider_label">Proveedor</string>
+    <string name="change_provider">Configurar otro proveedor…</string>
+    <string name="configure_provider_title">Configurar proveedor</string>
+    <string name="new_conversations_provider">Conversaciones nuevas: %1$s</string>
+    <string name="default_provider_title">Proveedor por defecto para nuevas conversaciones</string>
+    <string name="base_url_label">URL del servidor local (compatible con OpenAI)</string>
+    <string name="api_key_label">API key</string>
+    <string name="api_key_hint">Pegar nueva API key</string>
+    <string name="api_key_configured">Configurada: sk-or-v1-…%1$s</string>
+    <string name="api_key_missing">Sin configurar</string>
+    <string name="delete_key">Borrar key</string>
+    <string name="key_deleted">Key eliminada.</string>
+    <string name="test_connection">Probar conexión</string>
+    <string name="testing_connection">Probando conexión…</string>
+    <string name="connection_ok">Conexión OK: %1$d modelos disponibles.</string>
+    <string name="connection_failed">No se pudo conectar. %1$s</string>
+    <string name="default_model_label">Modelo por defecto</string>
+    <string name="default_model_fallback">%1$s (predeterminado)</string>
+    <string name="choose_model">Elegir modelo…</string>
+    <string name="system_prompt_label">System prompt global (opcional)</string>
+    <string name="system_prompt_hint">Instrucciones que se agregan a toda conversación</string>
+    <string name="temperature_label">Temperature (0–2, opcional)</string>
+    <string name="max_tokens_label">Máx. tokens de respuesta (opcional)</string>
+    <string name="save">Guardar</string>
+    <string name="saved">Guardado.</string>
+    <string name="invalid_temperature">Temperature inválida: usá un número entre 0 y 2.</string>
+    <string name="invalid_max_tokens">Máx. tokens inválido: usá un entero positivo.</string>
+
+    <string name="pick_model_title">Elegir modelo</string>
+    <string name="search_models_hint">Buscar modelo</string>
+    <string name="loading_models">Cargando modelos…</string>
+    <string name="no_models">No hay modelos que coincidan.</string>
+
+    <string name="rename">Renombrar</string>
+    <string name="delete">Eliminar</string>
+    <string name="delete_confirm">¿Eliminar esta conversación y todos sus mensajes?</string>
+    <string name="cancel">Cancelar</string>
+</resources>

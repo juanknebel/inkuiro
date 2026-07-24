@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- E-ink: pure contrast, no intermediate grays on surfaces -->
+    <color name="ink_white">#FFFFFF</color>
+    <color name="ink_black">#000000</color>
+</resources>

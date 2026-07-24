@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Not translatable -->
+    <string name="app_name" translatable="false">Inkuiro</string>
+    <string name="author_name" translatable="false">Juan Knebel</string>
+    <string name="author_email" translatable="false">juanknebel@gmail.com</string>
+    <string name="author_repo" translatable="false">https://github.com/juanknebel/inkuiro</string>
+    <string name="about_license_value" translatable="false">GNU General Public License v2 (GPLv2)</string>
+    <string name="base_url_hint" translatable="false">http://192.168.1.50:11434/v1</string>
+    <string name="back_arrow" translatable="false">‹</string>
+    <string name="page_up" translatable="false">▲</string>
+    <string name="page_down" translatable="false">▼</string>
+    <string name="page_prev" translatable="false">‹</string>
+    <string name="page_next" translatable="false">›</string>
+    <string name="page_indicator" translatable="false">%1$d/%2$d</string>
+    <string name="plus_sign" translatable="false">＋</string>
+
+    <!-- Default language = English (fallback) -->
+    <string name="new_conversation">New conversation</string>
+    <string name="settings">Settings</string>
+    <string name="about">About</string>
+    <string name="about_title">About</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_tagline">AI chat client for e-ink, built for the BOOX Palma.</string>
+    <string name="about_author_label">Author</string>
+    <string name="about_repo_label">Repository</string>
+    <string name="about_license_label">License</string>
+    <string name="empty_conversations">No conversations yet.\nTap ＋ to start one.</string>
+    <string name="send">Send</string>
+    <string name="stop">Stop</string>
+    <string name="generating">Generating…</string>
+    <string name="retry">Retry</string>
+    <string name="message_hint">Message</string>
+
+    <string name="provider_label">Provider</string>
+    <string name="change_provider">Configure another provider…</string>
+    <string name="configure_provider_title">Configure provider</string>
+    <string name="new_conversations_provider">New conversations use: %1$s</string>
+    <string name="default_provider_title">Default provider for new conversations</string>
+    <string name="base_url_label">Local server URL (OpenAI-compatible)</string>
+    <string name="api_key_label">API key</string>
+    <string name="api_key_hint">Paste new API key</string>
+    <string name="api_key_configured">Configured: sk-or-v1-…%1$s</string>
+    <string name="api_key_missing">Not configured</string>
+    <string name="delete_key">Delete key</string>
+    <string name="key_deleted">Key deleted.</string>
+    <string name="test_connection">Test connection</string>
+    <string name="testing_connection">Testing connection…</string>
+    <string name="connection_ok">Connection OK: %1$d models available.</string>
+    <string name="connection_failed">Could not connect. %1$s</string>
+    <string name="default_model_label">Default model</string>
+    <string name="default_model_fallback">%1$s (default)</string>
+    <string name="choose_model">Choose model…</string>
+    <string name="system_prompt_label">Global system prompt (optional)</string>
+    <string name="system_prompt_hint">Instructions added to every conversation</string>
+    <string name="temperature_label">Temperature (0–2, optional)</string>
+    <string name="max_tokens_label">Max response tokens (optional)</string>
+    <string name="save">Save</string>
+    <string name="saved">Saved.</string>
+    <string name="invalid_temperature">Invalid temperature: use a number between 0 and 2.</string>
+    <string name="invalid_max_tokens">Invalid max tokens: use a positive integer.</string>
+
+    <string name="pick_model_title">Choose model</string>
+    <string name="search_models_hint">Search models</string>
+    <string name="loading_models">Loading models…</string>
+    <string name="no_models">No matching models.</string>
+
+    <string name="rename">Rename</string>
+    <string name="delete">Delete</string>
+    <string name="delete_confirm">Delete this conversation and all its messages?</string>
+    <string name="cancel">Cancel</string>
+</resources>
