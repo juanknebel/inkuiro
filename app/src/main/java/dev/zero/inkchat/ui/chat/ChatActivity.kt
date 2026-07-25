@@ -185,7 +185,7 @@ class ChatActivity : AppCompatActivity() {
         if (text != lastStreamingText) {
             lastStreamingText = text
             if (text.isNotEmpty()) {
-                markwon.setMarkdown(view, text)
+                Markdown.render(markwon, view, text)
                 scrollToBottom()
             }
         }
@@ -197,7 +197,7 @@ class ChatActivity : AppCompatActivity() {
         if (isUser) {
             view.text = message.content
         } else {
-            markwon.setMarkdown(view, message.content)
+            Markdown.render(markwon, view, message.content)
         }
         // The in-progress message (if any) always stays last.
         val index = streamingView?.let { binding.messagesContainer.indexOfChild(it) } ?: -1

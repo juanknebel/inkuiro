@@ -123,6 +123,12 @@ for pagination.
 - **`PagedScrollView`**: no drag/fling/inertia — only discrete page jumps via
   buttons, taps on the top/bottom third, or the Palma's physical button
   (`onKeyDown` maps PAGE_UP/DOWN + volume). Full refresh every 5 manual turns.
+  **Gotcha:** message TextViews must not consume the tap, or paging silently
+  dies once messages fill the screen. Markwon installs a `LinkMovementMethod`
+  (a `ScrollingMovementMethod`, which grabs ACTION_DOWN unconditionally) and
+  marks the view clickable — `Markdown.render()` swaps in
+  `LinkOnlyMovementMethod` and clears both flags. Always render messages
+  through that helper, never `markwon.setMarkdown()` directly.
 
 ### Provider selection UX
 
