@@ -30,6 +30,7 @@ class OpenRouterProvider(
     baseUrlProvider = { baseUrl },
     requiresKey = true,
     usageFlavor = UsageFlavor.OPENROUTER,
+    supportsWebSearch = true,
     nowMs = nowMs,
 ) {
 

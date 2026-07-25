@@ -1,5 +1,6 @@
 package dev.zero.inkchat.data.provider.anthropic
 
+import dev.zero.inkchat.data.images.ImageStore
 import dev.zero.inkchat.data.provider.AiProvider
 import dev.zero.inkchat.data.provider.ChatEvent
 import dev.zero.inkchat.data.provider.ChatSseHandler
@@ -18,6 +19,11 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.addJsonObject
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.putJsonObject
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -41,8 +47,27 @@ internal data class AnthropicRequestDto(
 @Serializable
 internal data class AnthropicMessageDto(
     val role: String,
-    val content: String,
+    val content: JsonElement,
 )
+
+internal fun anthropicTextContent(text: String): JsonElement = JsonPrimitive(text)
+
+/** Anthropic's recommended order is image block(s) before the accompanying text. */
+internal fun anthropicTextAndImageContent(text: String, base64: String, mediaType: String): JsonElement =
+    buildJsonArray {
+        addJsonObject {
+            put("type", JsonPrimitive("image"))
+            putJsonObject("source") {
+                put("type", JsonPrimitive("base64"))
+                put("media_type", JsonPrimitive(mediaType))
+                put("data", JsonPrimitive(base64))
+            }
+        }
+        addJsonObject {
+            put("type", JsonPrimitive("text"))
+            put("text", JsonPrimitive(text))
+        }
+    }
 
 // ---- Streaming events (payload "type" field drives dispatch) ----
 
@@ -172,7 +197,12 @@ class AnthropicProvider(
             maxTokens = request.maxTokens ?: DEFAULT_MAX_TOKENS,
             messages = request.messages
                 .filter { it.role != Role.SYSTEM }
-                .map { AnthropicMessageDto(it.role.wire, it.content) },
+                .map { turn ->
+                    val content = turn.imagePath?.let { path ->
+                        anthropicTextAndImageContent(turn.content, ImageStore.readBase64(path), ImageStore.MIME_TYPE)
+                    } ?: anthropicTextContent(turn.content)
+                    AnthropicMessageDto(turn.role.wire, content)
+                },
             system = system,
             stream = true,
             temperature = request.temperature,

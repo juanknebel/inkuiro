@@ -1,5 +1,6 @@
 package dev.zero.inkchat.data.provider.compat
 
+import dev.zero.inkchat.data.images.ImageStore
 import dev.zero.inkchat.data.provider.AiProvider
 import dev.zero.inkchat.data.provider.ChatEvent
 import dev.zero.inkchat.data.provider.ChatSseHandler
@@ -33,6 +34,7 @@ open class OpenAiCompatProvider(
     private val baseUrlProvider: () -> String,
     private val requiresKey: Boolean = true,
     private val usageFlavor: UsageFlavor = UsageFlavor.STREAM_OPTIONS,
+    override val supportsWebSearch: Boolean = false,
     private val nowMs: () -> Long = System::currentTimeMillis,
 ) : AiProvider {
 
@@ -86,7 +88,12 @@ open class OpenAiCompatProvider(
         }
         val dto = ChatCompletionRequestDto(
             model = request.modelId,
-            messages = request.messages.map { ChatMessageDto(it.role.wire, it.content) },
+            messages = request.messages.map { turn ->
+                val content = turn.imagePath?.let { path ->
+                    textAndImageContent(turn.content, "data:${ImageStore.MIME_TYPE};base64,${ImageStore.readBase64(path)}")
+                } ?: textContent(turn.content)
+                ChatMessageDto(turn.role.wire, content)
+            },
             stream = true,
             temperature = request.temperature,
             maxTokens = request.maxTokens,
@@ -94,6 +101,7 @@ open class OpenAiCompatProvider(
             streamOptions = if (usageFlavor == UsageFlavor.STREAM_OPTIONS) {
                 StreamOptionsDto(includeUsage = true)
             } else null,
+            plugins = if (supportsWebSearch && request.webSearch) listOf(PluginDto("web")) else null,
         )
         val httpRequest = requestBuilder("$baseUrl/chat/completions")
             .header("Accept", "text/event-stream")

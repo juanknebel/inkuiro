@@ -85,4 +85,21 @@ class MessageDaoTest {
         val all = dao.observeForConversation("conv").first()
         assertEquals(listOf("a", "b"), all.map { it.id })
     }
+
+    @Test
+    fun `observeTokenUsage sums tokens and ignores null entries`() = runTest {
+        dao.upsert(message("m1", createdAt = 1).copy(tokensIn = 10, tokensOut = 5))
+        dao.upsert(message("m2", createdAt = 2).copy(tokensIn = 20, tokensOut = null))
+        dao.upsert(message("m3", createdAt = 3)) // user message, no usage
+
+        val usage = dao.observeTokenUsage("conv").first()
+        assertEquals(30, usage.tokensIn)
+        assertEquals(5, usage.tokensOut)
+    }
+
+    @Test
+    fun `observeTokenUsage on an empty conversation is zero, not null`() = runTest {
+        val usage = dao.observeTokenUsage("conv").first()
+        assertEquals(TokenUsage(0, 0), usage)
+    }
 }

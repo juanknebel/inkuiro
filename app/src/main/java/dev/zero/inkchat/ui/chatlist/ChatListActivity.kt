@@ -4,13 +4,13 @@ import android.os.Bundle
 import android.text.format.DateUtils
 import android.util.TypedValue
 import android.widget.EditText
-import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import dev.zero.inkchat.data.provider.openrouter.OpenRouterProvider
 import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -19,6 +19,7 @@ import dev.zero.inkchat.R
 import dev.zero.inkchat.data.db.ConversationEntity
 import dev.zero.inkchat.databinding.ActivityChatListBinding
 import dev.zero.inkchat.ui.chat.ChatActivity
+import dev.zero.inkchat.ui.common.PromptDialog
 import dev.zero.inkchat.ui.common.TwoLine
 import dev.zero.inkchat.ui.eink.EinkRefresh
 import dev.zero.inkchat.ui.settings.SettingsActivity
@@ -34,6 +35,7 @@ class ChatListActivity : AppCompatActivity() {
     private val graph get() = (application as App).graph
 
     private var conversations: List<ConversationEntity> = emptyList()
+    private var searchQuery: String = ""
     private var page = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,6 +53,14 @@ class ChatListActivity : AppCompatActivity() {
             startActivity(android.content.Intent(this, SettingsActivity::class.java))
         }
         binding.btnProvider.setOnClickListener { showProviderPicker() }
+        binding.searchInput.setOnFocusChangeListener { view, hasFocus ->
+            (view as EditText).isCursorVisible = hasFocus
+        }
+        binding.searchInput.doAfterTextChanged {
+            searchQuery = it?.toString().orEmpty()
+            page = 0
+            renderPage()
+        }
         binding.btnPrevPage.setOnClickListener {
             if (page > 0) { page--; renderPage() }
         }
@@ -93,14 +103,33 @@ class ChatListActivity : AppCompatActivity() {
             .show()
     }
 
+    private val filteredConversations: List<ConversationEntity>
+        get() = if (searchQuery.isBlank()) {
+            conversations
+        } else {
+            conversations.filter {
+                it.title.contains(searchQuery, ignoreCase = true) ||
+                    it.modelId.contains(searchQuery, ignoreCase = true)
+            }
+        }
+
     private val pageCount: Int
-        get() = if (conversations.isEmpty()) 1 else (conversations.size + PAGE_SIZE - 1) / PAGE_SIZE
+        get() {
+            val count = filteredConversations.size
+            return if (count == 0) 1 else (count + PAGE_SIZE - 1) / PAGE_SIZE
+        }
 
     private fun renderPage() {
-        binding.emptyState.isVisible = conversations.isEmpty()
-        binding.paginationBar.isVisible = conversations.size > PAGE_SIZE
+        val filtered = filteredConversations
+        binding.emptyState.isVisible = filtered.isEmpty()
+        binding.emptyState.text = if (searchQuery.isNotBlank()) {
+            getString(R.string.no_search_results)
+        } else {
+            getString(R.string.empty_conversations)
+        }
+        binding.paginationBar.isVisible = filtered.size > PAGE_SIZE
         binding.listContainer.removeAllViews()
-        conversations.drop(page * PAGE_SIZE).take(PAGE_SIZE).forEach { conversation ->
+        filtered.drop(page * PAGE_SIZE).take(PAGE_SIZE).forEach { conversation ->
             binding.listContainer.addView(conversationView(conversation))
         }
         binding.lblPage.text = getString(R.string.page_indicator, page + 1, pageCount)
@@ -149,35 +178,12 @@ class ChatListActivity : AppCompatActivity() {
     }
 
     private fun promptRename(conversation: ConversationEntity) {
-        val input = EditText(this)
-        input.setText(conversation.title)
-        input.setTextColor(getColor(R.color.ink_black))
-        input.setBackgroundResource(R.drawable.bg_input)
-        input.setPadding(dp(12), dp(12), dp(12), dp(12))
-        val wrapper = FrameLayout(this)
-        wrapper.setPadding(dp(16), dp(8), dp(16), 0)
-        wrapper.addView(
-            input,
-            FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-            ),
-        )
-
-        AlertDialog.Builder(this, R.style.Theme_InkChat_Dialog)
-            .setTitle(R.string.rename)
-            .setView(wrapper)
-            .setPositiveButton(R.string.save) { _, _ ->
-                val title = input.text.toString().trim()
-                if (title.isNotEmpty()) {
-                    lifecycleScope.launch {
-                        graph.database.conversationDao()
-                            .rename(conversation.id, title, System.currentTimeMillis())
-                    }
-                }
+        PromptDialog.show(this, getString(R.string.rename), conversation.title) { title ->
+            lifecycleScope.launch {
+                graph.database.conversationDao()
+                    .rename(conversation.id, title, System.currentTimeMillis())
             }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
+        }
     }
 
     private fun confirmDelete(conversation: ConversationEntity) {

@@ -45,6 +45,16 @@
                 android:singleLine="true"
                 android:textColor="@color/ink_black"
                 android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/txtTokens"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textColor="@color/ink_black"
+                android:textSize="12sp"
+                android:visibility="gone" />
         </LinearLayout>
 
         <Button
@@ -60,6 +70,15 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:text="@string/page_down" />
+
+        <Button
+            android:id="@+id/btnMore"
+            style="@style/Widget.InkChat.Button.Flat"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/more_actions"
+            android:text="@string/more_glyph"
+            android:visibility="gone" />
     </LinearLayout>
 
     <View
@@ -128,11 +147,58 @@
         android:visibility="gone" />
 
     <LinearLayout
+        android:id="@+id/attachmentPreview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="8dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/imgAttachmentPreview"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:contentDescription="@string/attached_image"
+            android:scaleType="centerCrop" />
+
+        <Button
+            android:id="@+id/btnRemoveAttachment"
+            style="@style/Widget.InkChat.Button.Flat"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:contentDescription="@string/remove_attachment"
+            android:text="@string/remove_glyph" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="bottom"
         android:orientation="horizontal"
         android:padding="8dp">
+
+        <Button
+            android:id="@+id/btnAttach"
+            style="@style/Widget.InkChat.Button.Flat"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="4dp"
+            android:contentDescription="@string/attach_image"
+            android:text="@string/attach_glyph" />
+
+        <Button
+            android:id="@+id/btnWebSearch"
+            style="@style/Widget.InkChat.Button.Flat"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="4dp"
+            android:contentDescription="@string/web_search_toggle"
+            android:text="@string/web_search_glyph"
+            android:visibility="gone" />
 
         <EditText
             android:id="@+id/input"

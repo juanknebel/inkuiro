@@ -50,6 +50,11 @@ class SecurePrefs(context: Context) : ChatSettings {
             if (value.isNullOrBlank()) remove("local_base_url") else putString("local_base_url", value)
         }
 
+    /** One of [FONT_SIZE_PRESETS_SP]. Discrete presets, no slider — e-ink design language. */
+    var messageFontSizeSp: Int
+        get() = prefs.getInt("message_font_size_sp", DEFAULT_FONT_SIZE_SP)
+        set(value) = prefs.edit { putInt("message_font_size_sp", value) }
+
     override var systemPrompt: String?
         get() = prefs.getString("system_prompt", null)
         set(value) = prefs.edit { putString("system_prompt", value) }
@@ -65,4 +70,9 @@ class SecurePrefs(context: Context) : ChatSettings {
         set(value) = prefs.edit {
             if (value == null) remove("max_tokens") else putInt("max_tokens", value)
         }
+
+    companion object {
+        const val DEFAULT_FONT_SIZE_SP = 18
+        val FONT_SIZE_PRESETS_SP = listOf(16, 18, 20, 24)
+    }
 }

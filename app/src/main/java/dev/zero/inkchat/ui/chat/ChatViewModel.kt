@@ -5,7 +5,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import dev.zero.inkchat.data.db.ConversationEntity
 import dev.zero.inkchat.data.db.MessageEntity
+import dev.zero.inkchat.data.db.TokenUsage
+import dev.zero.inkchat.data.images.ImageStore
 import dev.zero.inkchat.domain.ChatRepository
+import dev.zero.inkchat.domain.model.Role
 import dev.zero.inkchat.i18n.Msg
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -36,6 +39,11 @@ class ChatViewModel(
         val streamingText: String? = null,
         val generating: Boolean = false,
         val error: ErrorUi? = null,
+        /** Sticky until toggled off; only honored when the provider supports it. */
+        val webSearchEnabled: Boolean = false,
+        val tokenUsage: TokenUsage = TokenUsage(0, 0),
+        /** Local path of an image picked for the next outgoing message, if any. */
+        val pendingImagePath: String? = null,
     )
 
     private val _state = MutableStateFlow(UiState())
@@ -56,6 +64,11 @@ class ChatViewModel(
                 _state.update { it.copy(messages = messages) }
             }
         }
+        viewModelScope.launch {
+            repository.observeTokenUsage(conversationId).collect { usage ->
+                _state.update { it.copy(tokenUsage = usage) }
+            }
+        }
     }
 
     fun reloadConversation() {
@@ -64,12 +77,29 @@ class ChatViewModel(
         }
     }
 
+    fun toggleWebSearch() {
+        _state.update { it.copy(webSearchEnabled = !it.webSearchEnabled) }
+    }
+
+    /** Called once the picked image has been downscaled and stored locally. */
+    fun attachImage(path: String) {
+        _state.value.pendingImagePath?.let { ImageStore.delete(it) }
+        _state.update { it.copy(pendingImagePath = path) }
+    }
+
+    fun clearAttachedImage() {
+        _state.value.pendingImagePath?.let { ImageStore.delete(it) }
+        _state.update { it.copy(pendingImagePath = null) }
+    }
+
     fun send(text: String) {
         val trimmed = text.trim()
-        if (trimmed.isEmpty() || _state.value.generating) return
+        if ((trimmed.isEmpty() && _state.value.pendingImagePath == null) || _state.value.generating) return
+        val imagePath = _state.value.pendingImagePath
         generationJob = viewModelScope.launch {
             val conversation = repository.getConversation(conversationId) ?: return@launch
-            repository.appendUserMessage(conversation, trimmed)
+            repository.appendUserMessage(conversation, trimmed, imagePath)
+            _state.update { it.copy(pendingImagePath = null) }
             // The title may have been auto-generated from the first message.
             _state.update { it.copy(conversation = repository.getConversation(conversationId)) }
             runGeneration(conversation)
@@ -89,6 +119,46 @@ class ChatViewModel(
         generationJob?.cancel()
     }
 
+    /** Deletes the last assistant reply and asks for a new one. Only valid when the last message is one. */
+    fun regenerateLastResponse() {
+        if (_state.value.generating) return
+        val last = _state.value.messages.lastOrNull() ?: return
+        if (last.role != Role.ASSISTANT.wire) return
+        generationJob = viewModelScope.launch {
+            val conversation = repository.getConversation(conversationId) ?: return@launch
+            repository.deleteMessage(last.id)
+            runGeneration(conversation)
+        }
+    }
+
+    /**
+     * Replaces the last user turn with [newText] and re-generates. Drops that
+     * turn and whatever came after it (typically a single assistant reply, by
+     * construction of a normal back-and-forth conversation).
+     */
+    fun editLastUserMessage(newText: String) {
+        val trimmed = newText.trim()
+        if (trimmed.isEmpty() || _state.value.generating) return
+        val messages = _state.value.messages
+        val lastUserIndex = messages.indexOfLast { it.role == Role.USER.wire }
+        if (lastUserIndex == -1) return
+        val toDelete = messages.subList(lastUserIndex, messages.size)
+        generationJob = viewModelScope.launch {
+            val conversation = repository.getConversation(conversationId) ?: return@launch
+            toDelete.forEach { repository.deleteMessage(it.id) }
+            repository.appendUserMessage(conversation, trimmed)
+            _state.update { it.copy(conversation = repository.getConversation(conversationId)) }
+            runGeneration(conversation)
+        }
+    }
+
+    /** The message a header "more actions" menu can currently act on, if any. */
+    fun lastUserMessage(): MessageEntity? =
+        _state.value.messages.lastOrNull { it.role == Role.USER.wire }
+
+    fun canRegenerate(): Boolean =
+        !_state.value.generating && _state.value.messages.lastOrNull()?.role == Role.ASSISTANT.wire
+
     private suspend fun runGeneration(conversation: ConversationEntity) {
         _state.update { it.copy(generating = true, error = null, streamingText = "") }
         var partial = ""
@@ -96,7 +166,8 @@ class ChatViewModel(
 
         try {
             val history = repository.listMessages(conversation.id)
-            repository.streamReply(conversation, history).coalesceForEink().collect { update ->
+            val webSearch = _state.value.webSearchEnabled
+            repository.streamReply(conversation, history, webSearch).coalesceForEink().collect { update ->
                 when (update) {
                     is StreamUpdate.Progress -> {
                         partial = update.markdown

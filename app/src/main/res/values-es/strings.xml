@@ -10,11 +10,23 @@
     <string name="about_repo_label">Repositorio</string>
     <string name="about_license_label">Licencia</string>
     <string name="empty_conversations">Sin conversaciones.\nTocá ＋ para empezar.</string>
+    <string name="search_conversations_hint">Buscar conversaciones</string>
+    <string name="no_search_results">Ninguna conversación coincide con la búsqueda.</string>
     <string name="send">Enviar</string>
     <string name="stop">Detener</string>
     <string name="generating">Generando…</string>
     <string name="retry">Reintentar</string>
     <string name="message_hint">Mensaje</string>
+    <string name="web_search_toggle">Búsqueda web</string>
+    <string name="web_search_on">Búsqueda web: activada para el próximo mensaje</string>
+    <string name="web_search_off">Búsqueda web: desactivada</string>
+    <string name="token_usage_format">↓ %1$s entrada · ↑ %2$s salida</string>
+    <string name="more_actions">Más acciones</string>
+    <string name="regenerate_response">Regenerar última respuesta</string>
+    <string name="edit_last_message">Editar último mensaje</string>
+    <string name="attach_image">Adjuntar imagen</string>
+    <string name="attached_image">Imagen adjunta</string>
+    <string name="remove_attachment">Quitar adjunto</string>
 
     <string name="provider_label">Proveedor</string>
     <string name="change_provider">Configurar otro proveedor…</string>
@@ -43,6 +55,7 @@
     <string name="saved">Guardado.</string>
     <string name="invalid_temperature">Temperature inválida: usá un número entre 0 y 2.</string>
     <string name="invalid_max_tokens">Máx. tokens inválido: usá un entero positivo.</string>
+    <string name="font_size_label">Tamaño de fuente de los mensajes</string>
 
     <string name="pick_model_title">Elegir modelo</string>
     <string name="search_models_hint">Buscar modelo</string>

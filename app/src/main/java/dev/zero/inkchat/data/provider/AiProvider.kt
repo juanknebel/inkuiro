@@ -11,6 +11,9 @@ interface AiProvider {
     /** Sensible default model when the user has not picked one in Settings yet. */
     val fallbackModelId: String
 
+    /** True when this provider can ground replies with a live web search. */
+    val supportsWebSearch: Boolean get() = false
+
     /**
      * @param forceRefresh skips the cache (e.g. "Test connection" in Settings).
      * @throws ProviderException when there is no key or the API returns an error.

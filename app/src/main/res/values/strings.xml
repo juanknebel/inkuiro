@@ -14,6 +14,11 @@
     <string name="page_next" translatable="false">›</string>
     <string name="page_indicator" translatable="false">%1$d/%2$d</string>
     <string name="plus_sign" translatable="false">＋</string>
+    <string name="web_search_glyph" translatable="false">🌐</string>
+    <string name="font_size_glyph" translatable="false">A</string>
+    <string name="more_glyph" translatable="false">⋯</string>
+    <string name="attach_glyph" translatable="false">📎</string>
+    <string name="remove_glyph" translatable="false">✕</string>
 
     <!-- Default language = English (fallback) -->
     <string name="new_conversation">New conversation</string>
@@ -26,11 +31,23 @@
     <string name="about_repo_label">Repository</string>
     <string name="about_license_label">License</string>
     <string name="empty_conversations">No conversations yet.\nTap ＋ to start one.</string>
+    <string name="search_conversations_hint">Search conversations</string>
+    <string name="no_search_results">No conversations match your search.</string>
     <string name="send">Send</string>
     <string name="stop">Stop</string>
     <string name="generating">Generating…</string>
     <string name="retry">Retry</string>
     <string name="message_hint">Message</string>
+    <string name="web_search_toggle">Web search</string>
+    <string name="web_search_on">Web search: on for the next message</string>
+    <string name="web_search_off">Web search: off</string>
+    <string name="token_usage_format">↓ %1$s in · ↑ %2$s out</string>
+    <string name="more_actions">More actions</string>
+    <string name="regenerate_response">Regenerate last response</string>
+    <string name="edit_last_message">Edit last message</string>
+    <string name="attach_image">Attach image</string>
+    <string name="attached_image">Attached image</string>
+    <string name="remove_attachment">Remove attachment</string>
 
     <string name="provider_label">Provider</string>
     <string name="change_provider">Configure another provider…</string>
@@ -59,6 +76,7 @@
     <string name="saved">Saved.</string>
     <string name="invalid_temperature">Invalid temperature: use a number between 0 and 2.</string>
     <string name="invalid_max_tokens">Invalid max tokens: use a positive integer.</string>
+    <string name="font_size_label">Message font size</string>
 
     <string name="pick_model_title">Choose model</string>
     <string name="search_models_hint">Search models</string>

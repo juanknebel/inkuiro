@@ -11,6 +11,7 @@ import dev.zero.inkchat.R
 import dev.zero.inkchat.data.provider.AiProvider
 import dev.zero.inkchat.data.provider.ProviderException
 import dev.zero.inkchat.data.provider.openrouter.OpenRouterProvider
+import dev.zero.inkchat.data.prefs.SecurePrefs
 import dev.zero.inkchat.databinding.ActivitySettingsBinding
 import dev.zero.inkchat.ui.eink.EinkRefresh
 import kotlinx.coroutines.launch
@@ -67,6 +68,16 @@ class SettingsActivity : AppCompatActivity() {
         binding.inputSystemPrompt.setText(prefs.systemPrompt.orEmpty())
         binding.inputTemperature.setText(prefs.temperature?.toString().orEmpty())
         binding.inputMaxTokens.setText(prefs.maxTokens?.toString().orEmpty())
+
+        val fontButtons = listOf(binding.btnFontSmall, binding.btnFontMedium, binding.btnFontLarge, binding.btnFontXLarge)
+        SecurePrefs.FONT_SIZE_PRESETS_SP.zip(fontButtons).forEach { (sizeSp, button) ->
+            button.setOnClickListener {
+                prefs.messageFontSizeSp = sizeSp
+                renderFontSizeSelection()
+            }
+        }
+        renderFontSizeSelection()
+
         renderProvider()
     }
 
@@ -141,6 +152,25 @@ class SettingsActivity : AppCompatActivity() {
             getString(R.string.api_key_missing)
         } else {
             getString(R.string.api_key_configured, key.takeLast(4))
+        }
+    }
+
+    private fun renderFontSizeSelection() {
+        val current = prefs.messageFontSizeSp
+        val buttons = mapOf(
+            SecurePrefs.FONT_SIZE_PRESETS_SP[0] to binding.btnFontSmall,
+            SecurePrefs.FONT_SIZE_PRESETS_SP[1] to binding.btnFontMedium,
+            SecurePrefs.FONT_SIZE_PRESETS_SP[2] to binding.btnFontLarge,
+            SecurePrefs.FONT_SIZE_PRESETS_SP[3] to binding.btnFontXLarge,
+        )
+        buttons.forEach { (sizeSp, button) ->
+            if (sizeSp == current) {
+                button.setBackgroundColor(getColor(R.color.ink_black))
+                button.setTextColor(getColor(R.color.ink_white))
+            } else {
+                button.setBackgroundResource(R.drawable.bg_button_border)
+                button.setTextColor(getColor(R.color.ink_black))
+            }
         }
     }
 

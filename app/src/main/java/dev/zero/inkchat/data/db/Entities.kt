@@ -36,4 +36,6 @@ data class MessageEntity(
     val tokensIn: Int?,
     val tokensOut: Int?,
     val createdAt: Long,
+    /** Local file path of an attached image (JPEG), if any. User messages only. */
+    val imagePath: String? = null,
 )

@@ -15,6 +15,8 @@ enum class Role(val wire: String) {
 data class ChatTurn(
     val role: Role,
     val content: String,
+    /** Local file path of an attached image (JPEG), if any. User turns only. */
+    val imagePath: String? = null,
 )
 
 data class ChatRequest(
@@ -22,4 +24,6 @@ data class ChatRequest(
     val messages: List<ChatTurn>,
     val temperature: Float? = null,
     val maxTokens: Int? = null,
+    /** Only honored by providers where [dev.zero.inkchat.data.provider.AiProvider.supportsWebSearch] is true. */
+    val webSearch: Boolean = false,
 )

@@ -1,5 +1,6 @@
 package dev.zero.inkchat.data.provider.gemini
 
+import dev.zero.inkchat.data.images.ImageStore
 import dev.zero.inkchat.data.provider.AiProvider
 import dev.zero.inkchat.data.provider.ChatEvent
 import dev.zero.inkchat.data.provider.ChatSseHandler
@@ -41,7 +42,14 @@ internal data class GeminiContentDto(
 
 @Serializable
 internal data class GeminiPartDto(
-    val text: String = "",
+    val text: String? = null,
+    @SerialName("inlineData") val inlineData: GeminiInlineDataDto? = null,
+)
+
+@Serializable
+internal data class GeminiInlineDataDto(
+    @SerialName("mimeType") val mimeType: String,
+    val data: String,
 )
 
 @Serializable
@@ -174,10 +182,15 @@ class GeminiProvider(
         val dto = GeminiRequestDto(
             contents = request.messages
                 .filter { it.role != Role.SYSTEM }
-                .map {
+                .map { turn ->
                     GeminiContentDto(
-                        role = if (it.role == Role.ASSISTANT) "model" else "user",
-                        parts = listOf(GeminiPartDto(it.content)),
+                        role = if (turn.role == Role.ASSISTANT) "model" else "user",
+                        parts = buildList {
+                            add(GeminiPartDto(text = turn.content))
+                            turn.imagePath?.let { path ->
+                                add(GeminiPartDto(inlineData = GeminiInlineDataDto(ImageStore.MIME_TYPE, ImageStore.readBase64(path))))
+                            }
+                        },
                     )
                 },
             systemInstruction = system?.let { GeminiContentDto(parts = listOf(GeminiPartDto(it))) },
@@ -230,7 +243,7 @@ internal class GeminiSseHandler(private val providerName: String) : ChatSseHandl
         var finished = false
         for (candidate in chunk.candidates) {
             candidate.content?.parts?.forEach { part ->
-                if (part.text.isNotEmpty()) events += ChatEvent.Delta(part.text)
+                if (!part.text.isNullOrEmpty()) events += ChatEvent.Delta(part.text)
             }
             if (candidate.finishReason != null) finished = true
         }

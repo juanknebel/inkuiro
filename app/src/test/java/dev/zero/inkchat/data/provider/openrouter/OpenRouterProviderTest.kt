@@ -168,6 +168,26 @@ class OpenRouterProviderTest {
         assertEquals(0, server.requestCount)
     }
 
+    @Test
+    fun `webSearch true adds the web plugin to the request body`() = runTest {
+        server.enqueue(sseResponse("data: [DONE]"))
+
+        provider.streamChat(request().copy(webSearch = true)).toList()
+
+        val sentBody = server.takeRequest().body.readUtf8()
+        assertTrue(sentBody.contains("\"plugins\":[{\"id\":\"web\"}]"))
+    }
+
+    @Test
+    fun `webSearch false omits the plugins field`() = runTest {
+        server.enqueue(sseResponse("data: [DONE]"))
+
+        provider.streamChat(request()).toList()
+
+        val sentBody = server.takeRequest().body.readUtf8()
+        assertFalse(sentBody.contains("plugins"))
+    }
+
     // ---- verifyAuth ----
 
     @Test

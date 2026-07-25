@@ -67,6 +67,21 @@
         android:layout_height="1dp"
         android:background="@color/ink_black" />
 
+    <EditText
+        android:id="@+id/searchInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:background="@drawable/bg_input"
+        android:cursorVisible="false"
+        android:hint="@string/search_conversations_hint"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:minHeight="44dp"
+        android:padding="10dp"
+        android:textColor="@color/ink_black"
+        android:textSize="16sp" />
+
     <TextView
         android:id="@+id/emptyState"
         android:layout_width="match_parent"

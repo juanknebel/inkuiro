@@ -219,6 +219,57 @@
                 android:textColor="@color/ink_black"
                 android:textSize="16sp" />
 
+            <TextView
+                style="@style/Widget.InkChat.Label"
+                android:layout_marginTop="20dp"
+                android:text="@string/font_size_label" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnFontSmall"
+                    style="@style/Widget.InkChat.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/font_size_glyph"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/btnFontMedium"
+                    style="@style/Widget.InkChat.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/font_size_glyph"
+                    android:textSize="17sp" />
+
+                <Button
+                    android:id="@+id/btnFontLarge"
+                    style="@style/Widget.InkChat.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/font_size_glyph"
+                    android:textSize="20sp" />
+
+                <Button
+                    android:id="@+id/btnFontXLarge"
+                    style="@style/Widget.InkChat.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/font_size_glyph"
+                    android:textSize="24sp" />
+            </LinearLayout>
+
             <Button
                 android:id="@+id/btnAbout"
                 style="@style/Widget.InkChat.Button.Flat"

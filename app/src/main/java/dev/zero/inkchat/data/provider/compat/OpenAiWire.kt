@@ -3,7 +3,11 @@ package dev.zero.inkchat.data.provider.compat
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.addJsonObject
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.putJsonObject
 
 /** Shared Json for the OpenAI-compatible wire format: tolerant to new API fields. */
 internal val wireJson = Json { ignoreUnknownKeys = true }
@@ -21,13 +25,33 @@ internal data class ChatCompletionRequestDto(
     val usage: UsageIncludeDto? = null,
     /** OpenAI flavor: same request, different parameter. */
     @SerialName("stream_options") val streamOptions: StreamOptionsDto? = null,
+    /** OpenRouter-only: e.g. [{"id":"web"}] to ground the reply with a live search. */
+    val plugins: List<PluginDto>? = null,
 )
+
+@Serializable
+internal data class PluginDto(val id: String)
 
 @Serializable
 internal data class ChatMessageDto(
     val role: String,
-    val content: String,
+    val content: JsonElement,
 )
+
+/** Plain text content, sent as a bare string as most OpenAI-compatible servers expect. */
+internal fun textContent(text: String): JsonElement = JsonPrimitive(text)
+
+/** Multi-part content: image_url blocks must come alongside the text in a single array. */
+internal fun textAndImageContent(text: String, dataUrl: String): JsonElement = buildJsonArray {
+    addJsonObject {
+        put("type", JsonPrimitive("text"))
+        put("text", JsonPrimitive(text))
+    }
+    addJsonObject {
+        put("type", JsonPrimitive("image_url"))
+        putJsonObject("image_url") { put("url", JsonPrimitive(dataUrl)) }
+    }
+}
 
 @Serializable
 internal data class UsageIncludeDto(val include: Boolean)

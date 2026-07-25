@@ -3,6 +3,8 @@ package dev.zero.inkchat.domain
 import dev.zero.inkchat.data.db.AppDatabase
 import dev.zero.inkchat.data.db.ConversationEntity
 import dev.zero.inkchat.data.db.MessageEntity
+import dev.zero.inkchat.data.db.TokenUsage
+import dev.zero.inkchat.data.images.ImageStore
 import dev.zero.inkchat.data.provider.ChatEvent
 import dev.zero.inkchat.data.provider.ProviderRegistry
 import dev.zero.inkchat.data.provider.openrouter.OpenRouterProvider
@@ -22,6 +24,14 @@ class ChatRepository(
 
     fun observeMessages(conversationId: String): Flow<List<MessageEntity>> =
         db.messageDao().observeForConversation(conversationId)
+
+    fun observeTokenUsage(conversationId: String): Flow<TokenUsage> =
+        db.messageDao().observeTokenUsage(conversationId)
+
+    suspend fun deleteMessage(id: String) {
+        db.messageDao().getById(id)?.imagePath?.let { ImageStore.delete(it) }
+        db.messageDao().delete(id)
+    }
 
     suspend fun listMessages(conversationId: String): List<MessageEntity> =
         db.messageDao().listForConversation(conversationId)
@@ -49,7 +59,11 @@ class ChatRepository(
      * Persists the user message. If the conversation still has the default
      * title, it is auto-generated from this first message.
      */
-    suspend fun appendUserMessage(conversation: ConversationEntity, text: String): MessageEntity {
+    suspend fun appendUserMessage(
+        conversation: ConversationEntity,
+        text: String,
+        imagePath: String? = null,
+    ): MessageEntity {
         val now = nowMs()
         val message = MessageEntity(
             id = UUID.randomUUID().toString(),
@@ -60,6 +74,7 @@ class ChatRepository(
             tokensIn = null,
             tokensOut = null,
             createdAt = now,
+            imagePath = imagePath,
         )
         db.messageDao().upsert(message)
         // The default title may have been created in any supported language.
@@ -95,12 +110,16 @@ class ChatRepository(
     }
 
     /** Builds the request (global system prompt + history) and opens the stream. */
-    fun streamReply(conversation: ConversationEntity, history: List<MessageEntity>): Flow<ChatEvent> {
+    fun streamReply(
+        conversation: ConversationEntity,
+        history: List<MessageEntity>,
+        webSearch: Boolean = false,
+    ): Flow<ChatEvent> {
         val provider = registry.require(conversation.providerId)
         val turns = buildList {
             settings.systemPrompt?.takeIf { it.isNotBlank() }?.let { add(ChatTurn(Role.SYSTEM, it)) }
             history.forEach { message ->
-                roleOf(message.role)?.let { add(ChatTurn(it, message.content)) }
+                roleOf(message.role)?.let { add(ChatTurn(it, message.content, message.imagePath)) }
             }
         }
         return provider.streamChat(
@@ -109,6 +128,7 @@ class ChatRepository(
                 messages = turns,
                 temperature = settings.temperature,
                 maxTokens = settings.maxTokens,
+                webSearch = webSearch,
             )
         )
     }
