@@ -60,6 +60,7 @@ Single module, package `dev.zero.inkchat`.
 ```
 data/
   db/        Room: Entities, ConversationDao, MessageDao, AppDatabase
+  images/    ImageStore — downscales/stores attached photos as JPEG under app-internal storage
   prefs/     SecurePrefs (EncryptedSharedPreferences; the ONLY place keys live)
   provider/  AiProvider interface + ProviderRegistry + SseStream (shared SSE runner)
     compat/    OpenAiCompatProvider — OpenAI-compatible wire (OpenAI, local, base for OpenRouter)
@@ -75,7 +76,7 @@ ui/
   chatlist/  ChatListActivity  (home: conversation list + default-provider picker)
   chat/      ChatActivity, ChatViewModel, StreamCoalescer, PagedScrollView
   settings/  SettingsActivity, ModelPickerActivity
-  common/    Markdown, TwoLine
+  common/    Markdown, TwoLine, PromptDialog (reusable EditText-in-AlertDialog helper)
   eink/      EinkRefresh — Onyx SDK facade (no-op off-device)
 App.kt / AppGraph.kt
 ```
@@ -103,12 +104,32 @@ Providers are wired in `AppGraph.providerRegistry`. `ChatEvent` is
 `Delta | Usage | Error | Done`; `streamChat` never throws — every failure arrives
 as `ChatEvent.Error(message, recoverable)`.
 
+`AiProvider.supportsWebSearch` (default `false`, `true` for OpenRouter) gates the
+chat header's web-search toggle; when on, `OpenAiCompatProvider` adds OpenRouter's
+`plugins: [{"id":"web"}]` to the request.
+
+**Vision**: `ChatTurn.imagePath` (a local file path from `ImageStore`) is optional
+and only meaningful on user turns. Each provider family encodes it differently —
+`ChatMessageDto.content` (OpenAI-compatible) and `AnthropicMessageDto.content`
+are `JsonElement` rather than `String` so a message can be either a plain string
+or a multi-part array (`[{type:"text"}, {type:"image_url"|"image"}]`); Gemini
+adds an `inlineData` part alongside `text`. Images are read + base64-encoded
+synchronously when the request DTO is built (same thread as JSON serialization,
+not off-loaded to IO) — acceptable since `ImageStore` caps images at 1568px JPEG
+q85 before they ever reach disk.
+
 ### Data model
 
 `ConversationEntity` carries its own `providerId` + `modelId`, so changing the
 default provider/model never affects existing conversations. Messages cascade-
 delete with their conversation. DAOs expose `Flow` for the list and `LIMIT/OFFSET`
-for pagination.
+for pagination. `MessageEntity.imagePath` (nullable) points at a JPEG under the
+app's internal `images/` dir; deleting a message (regenerate/edit-last-message)
+also deletes its image file via `ChatRepository.deleteMessage`.
+
+Schema changes use real `Migration`s (see `AppDatabase.MIGRATION_1_2`), not
+`fallbackToDestructiveMigration()` — this is a single-user app but the user's
+own conversation history on their physical device is real data, not disposable.
 
 ### E-ink specifics
 
@@ -142,6 +163,22 @@ for pagination.
   (`configuringProviderId`) — it does NOT change the default.
 - **Inside a chat**: tap the header to change that conversation's model (via
   `ModelPickerActivity`, scoped to that conversation's provider).
+
+### Chat header actions
+
+- **Token usage**: `MessageDao.observeTokenUsage` sums `tokensIn`/`tokensOut`
+  for the conversation; shown under the model name once non-zero.
+- **Search**: `ChatListActivity` filters in-memory over title + modelId; no DB
+  query, the conversation list is already fully loaded.
+- **Font size**: `SecurePrefs.messageFontSizeSp`, applied in
+  `ChatActivity.newMessageView()`; changing it in Settings forces a full
+  re-render on the next `onResume()` (`renderedIds.clear()`, since
+  `renderMessages()` otherwise skips unchanged id lists).
+- **Regenerate / edit last message**: header **⋯** button
+  (`ChatViewModel.regenerateLastResponse()` / `editLastUserMessage()`), only
+  shown when there's something to act on. Deliberately not long-press-on-message
+  — that would need `isLongClickable = true`, which is exactly what the
+  tap-to-page-turn fix above depends on being `false`.
 
 ## Localization
 
