@@ -9,10 +9,14 @@ import android.widget.ScrollView
 import dev.zero.inkchat.ui.eink.EinkRefresh
 
 /**
- * "Scroll" for e-ink: no drag, no fling, no inertia. Only discrete page jumps
- * (~90% of the visible height) via [pageUp]/[pageDown] or a tap on the top or
- * bottom third (plan §7.3). Taps on Markwon links keep working: the TextView
- * consumes them before they get here.
+ * Reading surface for the chat. Supports finger dragging plus discrete page
+ * jumps (~90% of the visible height) via [pageUp]/[pageDown] or a tap on the
+ * top or bottom third.
+ *
+ * Two concessions to e-ink: fling is disabled (inertia keeps repainting the
+ * screen after the finger lifts, which smears badly and overshoots), and a
+ * drag runs in the fast waveform, restoring quality plus a full refresh once
+ * the finger lifts.
  */
 class PagedScrollView @JvmOverloads constructor(
     context: Context,
@@ -40,15 +44,34 @@ class PagedScrollView @JvmOverloads constructor(
         },
     )
 
-    // No intercepting: children (links) see the touch first; whatever they do
-    // not consume reaches onTouchEvent and turns into a page flip.
-    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean = false
+    /** scrollY when the current gesture started, to tell a drag from a tap. */
+    private var scrollYAtTouchDown = 0
+    private var draggingInFastMode = false
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent): Boolean {
         gestureDetector.onTouchEvent(ev)
-        return true
+        when (ev.actionMasked) {
+            MotionEvent.ACTION_DOWN -> scrollYAtTouchDown = scrollY
+
+            // Only once the content actually moves — a tap wiggles a few pixels
+            // and must not pay for a full refresh on release.
+            MotionEvent.ACTION_MOVE -> if (!draggingInFastMode && scrollY != scrollYAtTouchDown) {
+                draggingInFastMode = true
+                EinkRefresh.applyFastMode(this)
+            }
+
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> if (draggingInFastMode) {
+                draggingInFastMode = false
+                EinkRefresh.applyQualityMode(this)
+                EinkRefresh.fullRefresh(this)
+            }
+        }
+        return super.onTouchEvent(ev)
     }
+
+    /** No inertia: a fling would keep repainting long after the finger lifts. */
+    override fun fling(velocityY: Int) = Unit
 
     /** Manual page turns since the last full refresh. */
     private var turnsSinceFullRefresh = 0

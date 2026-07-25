@@ -6,8 +6,8 @@ Anthropic (Claude), Google Gemini, and a local OpenAI-compatible server
 (Ollama / llama.cpp). Personal, single-user app.
 
 The whole UI is designed for e-ink: no animations, pure black/white contrast,
-paginated reading instead of continuous scroll, and explicit control of screen
-refresh modes via the Onyx SDK.
+reading by page jumps (with drag scrolling available, minus the inertia), and
+explicit control of screen refresh modes via the Onyx SDK.
 
 This file reflects the current state of the app.
 
@@ -120,9 +120,12 @@ for pagination.
   and repaints only on a `\n\n` paragraph break or every 1500 ms — never token by
   token. Each update carries the FULL text; the UI re-renders the whole message
   with Markwon. Tested with virtual time.
-- **`PagedScrollView`**: no drag/fling/inertia — only discrete page jumps via
-  buttons, taps on the top/bottom third, or the Palma's physical button
-  (`onKeyDown` maps PAGE_UP/DOWN + volume). Full refresh every 5 manual turns.
+- **`PagedScrollView`**: finger dragging plus discrete page jumps via buttons,
+  taps on the top/bottom third, or the Palma's physical button (`onKeyDown`
+  maps PAGE_UP/DOWN + volume). Full refresh every 5 manual turns. Fling is
+  overridden to a no-op — inertia keeps repainting after the finger lifts — and
+  a drag runs in the fast waveform, restoring quality + full refresh on release
+  (only when the content actually moved, so a tap doesn't pay for a refresh).
   **Gotcha:** message TextViews must not consume the tap, or paging silently
   dies once messages fill the screen. Markwon installs a `LinkMovementMethod`
   (a `ScrollingMovementMethod`, which grabs ACTION_DOWN unconditionally) and

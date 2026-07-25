@@ -3,8 +3,8 @@
 A native Android AI chat client built for **e-ink phones** — specifically the
 [BOOX Palma / Palma 2](https://shop.boox.com/products/palma). It talks to
 multiple AI providers and renders everything with e-ink in mind: no animations,
-pure black-and-white contrast, paginated reading instead of continuous scroll,
-and explicit control of the screen refresh modes through the Onyx SDK.
+pure black-and-white contrast, reading by page jumps, and explicit control of
+the screen refresh modes through the Onyx SDK.
 
 It's a personal, single-user app.
 
@@ -23,8 +23,9 @@ It's a personal, single-user app.
   inference needs the network.
 - **Secure keys**: API keys are stored encrypted (Android Keystore) and never
   written to logs.
-- **Paginated reading** with the Palma's physical page-turn button, on-screen
-  buttons, or taps on the top/bottom of the screen.
+- **Reading built for e-ink**: turn pages with the Palma's physical button,
+  the on-screen arrows, or a tap on the top/bottom of the screen — or just
+  drag with your finger (inertia is disabled, since it smears on e-ink).
 - **Bilingual UI** (English / Spanish) following the system language.
 
 ## Screenshots
