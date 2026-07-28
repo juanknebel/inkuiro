@@ -35,6 +35,8 @@ It's a personal, single-user app.
   &nbsp;
   <img src="docs/screenshots/chat.png" width="220" alt="Chat — streamed reply rendered as Markdown" />
   &nbsp;
+  <img src="docs/screenshots/providers.png" width="220" alt="Provider picker — OpenRouter, OpenAI, Anthropic, Gemini, or a local Ollama / llama.cpp server" />
+  &nbsp;
   <img src="docs/screenshots/settings.png" width="220" alt="Settings — per-provider configuration" />
   &nbsp;
   <img src="docs/screenshots/about.png" width="220" alt="About screen" />
